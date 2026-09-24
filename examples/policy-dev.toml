@@ -1,0 +1,44 @@
+# Permissive development policy for trying setu out locally (mock backends).
+# NOT for production — see policy.toml for a realistic posture.
+
+[[rule]]
+agent  = "*"
+tool   = "journal.read"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.list_units"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.status"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.restart"
+units  = ["nginx.service"]
+action = "ask"
+
+[[rule]]
+agent  = "*"
+tool   = "net.*"
+action = "allow"
+
+[[rule]]
+agent  = "demo"
+tool   = "fs.*"
+scope  = { path_prefix = "/tmp/setu-demo" }
+action = "allow_with_snapshot"
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.search"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.info"
+action = "allow"

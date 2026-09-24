@@ -1,0 +1,45 @@
+# setu — policy-governed MCP broker for agent access to system capabilities.
+#
+# The broker is privileged (it mediates systemd/pkg/fs operations) but runs
+# heavily sandboxed itself: the only writable paths are its own state, and it
+# keeps no ambient capabilities beyond what the built-in servers need.
+
+[Unit]
+Description=setu MCP broker for AI agents
+Documentation=https://github.com/kolz001/setu
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/setu --policy /etc/setu/policy.toml --state-dir /var/lib/setu
+Restart=on-failure
+RestartSec=2
+
+RuntimeDirectory=setu
+RuntimeDirectoryMode=0755
+StateDirectory=setu
+StateDirectoryMode=0700
+ConfigurationDirectory=setu
+
+# Hardening. ProtectSystem=strict makes the whole filesystem read-only to the
+# daemon except its state; hosts that grant agents fs.write scopes must add
+# those prefixes to ReadWritePaths (e.g. ReadWritePaths=/srv/repos).
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,76 @@
+# setu policy — deny by default, evaluated top-down, first match wins.
+#
+# Actions: allow | deny | ask | allow_with_snapshot
+# Constraints: scope.path_prefix, units, packages, rate.calls_per_minute,
+#              time = { after/before "HH:MM" }, uid, require_token
+#
+# A tool with no potentially-allowing rule is invisible to the agent
+# (least-privilege discovery), and every call is audited either way.
+
+# --- Tvastr: analyzer reads, fixer writes (snapshotted), reviewer reads audit-adjacent data ---
+
+[[rule]]
+agent  = "tvastr-*"
+tool   = "journal.read"
+action = "allow"
+
+[[rule]]
+agent  = "tvastr-*"
+tool   = "fs.read"
+scope  = { path_prefix = "/srv/repos" }
+action = "allow"
+
+[[rule]]
+agent         = "tvastr-fixer"
+tool          = "fs.write"
+require_token = true
+scope         = { path_prefix = "/srv/repos" }
+action        = "allow_with_snapshot"
+
+# --- anyone may ask a human to restart nginx; other units fall through to deny ---
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.restart"
+units  = ["nginx.service"]
+action = "ask"
+
+# --- read-only observability for every agent, rate-limited ---
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.list_units"
+rate   = { calls_per_minute = 30 }
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "systemd.status"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "net.*"
+action = "allow"
+
+# --- package mutations: default posture is deny; loosen per host ---
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.search"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.info"
+action = "allow"
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.install"
+action = "deny"
+
+[[rule]]
+agent  = "*"
+tool   = "pkg.remove"
+action = "deny"
