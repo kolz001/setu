@@ -192,13 +192,20 @@ Code documentation follows godoc conventions, enforced at review:
 
 ## Roadmap
 
-- [x] Phase 1 — broker, policy engine, audit, journal/systemd servers, setuctl
-- [x] Phase 2 (core) — fs/pkg servers, snapshot+rollback, escalation manager
-- [ ] btrfs/ZFS/LVM snapshotters behind the existing manager interface; pkg-manager transaction undo
-- [ ] Third-party server registration API (manifest + risk tiers)
-- [ ] Task manifests enforced against policy (intent-scoped capabilities)
-- [ ] Desktop/webhook approval notifiers; polkit bridge
-- [ ] deb/rpm packaging, NixOS module; prompt-injection red-team suite
+Done:
+
+- [x] The broker, policy rules, audit log, and the `setuctl` admin tool
+- [x] File and package tools, undo for file changes, and asking a human before risky actions
+
+Next:
+
+- [ ] Test on real Linux machines (today's tests use simulated system tools)
+- [ ] Faster, safer undo using filesystem snapshots, and undo for package installs
+- [ ] Let other people plug in their own tools
+- [ ] Let an agent declare its task up front, and limit it to only what that task needs
+- [ ] Approval requests by desktop notification or chat message, not just the command line
+- [ ] Install packages for common Linux distributions
+- [ ] A test suite of prompt-injection attacks
 
 ## Security
 
